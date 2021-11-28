@@ -1,4 +1,4 @@
-name = "VoxelwiseConstant"
+name = "VoxelwiseConstantMapping"
 uuid = "30c4ba4d-5c6d-4df8-9a6f-7ded98721337"
 authors = ["Wonseok Shin <wsshin97@gmail.com>"]
 version = "0.1.0"
