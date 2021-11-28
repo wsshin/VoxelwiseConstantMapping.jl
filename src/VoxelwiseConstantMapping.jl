@@ -2,10 +2,11 @@ module VoxelwiseConstantMapping
 
 using StaticArrays
 export VoxelwiseConstant
+export bounds
 
 struct VoxelwiseConstant{K,AN<:AbstractArray{<:Number,K},VR<:AbstractVector{<:Real}}
     val::AN  # scalar values in voxels
-    vxlbound::NTuple{K,VR}  # locations of faces of voxels including ghost locations; length(face[k]) = size(val,k) + 1
+    vxlbound::NTuple{K,VR}  # locations of faces of voxels
 
     function VoxelwiseConstant{K,AN,VR}(val, vxlbound) where {K,AN,VR}
         size(val) .+ 1 == length.(vxlbound) ||
@@ -24,7 +25,6 @@ VoxelwiseConstant(val::AN, vxlbound::NTuple{K,VR}) where {K,AN<:AbstractArray{<:
 
 bounds(vc::VoxelwiseConstant) = (SVector(minimum.(vc.vxlbound)), SVector(maximum.(vc.vxlbound)))
 
-
 (vc::VoxelwiseConstant{K})(pt::AbstractVector{<:Real}) where {K} = vc(SVector{K}(pt))
 function (vc::VoxelwiseConstant{K})(pt::SVector{K,<:Real}) where {K}
     vxlbound = vc.vxlbound
@@ -34,10 +34,10 @@ function (vc::VoxelwiseConstant{K})(pt::SVector{K,<:Real}) where {K}
 
     # Find the pt-containing voxel with an inclusive negative-end boundary and exclusive
     # positive-end boundary.
-    indₛ = ntuple(k -> findlast(w -> w≤pt[k], vxlbound[k][1:end-1]), Val(K))  # end-1 to ensure voxel's positive-end boundary is exclusive
-    at_bound = ntuple(k -> (vxlbound[k][indₛ[k]]==pt[k] && indₛ[k]≥2), Val(K))
-    indₑ = indₛ .+ at_bound
-    CI = CartesianIndices(map((nᵢ,nₑ) -> nᵢ:nₑ, indₛ, indₑ))  # CartesianIndices{K}
+    indₑ = ntuple(k -> findlast(w -> w≤pt[k], vxlbound[k][1:end-1]), Val(K))  # end-1 to ensure voxel's positive-end boundary is exclusive
+    at_bound = ntuple(k -> (vxlbound[k][indₑ[k]]==pt[k] && indₑ[k]≥2), Val(K))
+    indₛ = indₑ .- at_bound
+    CI = CartesianIndices(map((nₛ,nₑ) -> nₛ:nₑ, indₛ, indₑ))  # CartesianIndices{K}
 
     val = 0.0
     for ci = CI
