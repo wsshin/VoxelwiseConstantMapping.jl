@@ -1,0 +1,3 @@
+module VoxelwiseConstant
+
+end # module
