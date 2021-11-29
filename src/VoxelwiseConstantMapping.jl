@@ -1,6 +1,7 @@
 module VoxelwiseConstantMapping
 
 using AbbreviatedTypes
+using Statistics: mean
 
 export VoxelwiseConstant
 export bounds
@@ -36,18 +37,21 @@ function (vc::VoxelwiseConstant{K,AN})(pt::SReal{K}) where {K,AN<:AbsArrNumber{K
 
     # Find the pt-containing voxel with an inclusive negative-end boundary and exclusive
     # positive-end boundary.
-    indₑ = ntuple(k -> findlast(w -> w≤pt[k], vxlbound[k][1:end-1]), Val(K))  # end-1 to ensure voxel's positive-end boundary is exclusive
-    at_bound = ntuple(k -> (vxlbound[k][indₑ[k]]==pt[k] && indₑ[k]≥2), Val(K))
-    indₛ = indₑ .- at_bound
-    CI = CartesianIndices(map((nₛ,nₑ) -> nₛ:nₑ, indₛ, indₑ))  # CartesianIndices{K}
+    ind_rng = MVec{K,UnitRange{Int64}}(undef)
+    for k = 1:K
+        ptₖ = pt[k]
+        vxlboundₖ = vxlbound[k]
 
-    val = 0.0
-    for ci = CI
-        val += vc.val[ci]
+        indₑ = findlast(w -> w≤ptₖ, @view(vxlboundₖ[1:end-1]))
+
+        at_bound = vxlboundₖ[indₑ]==ptₖ && indₑ≥2
+        indₛ = indₑ - at_bound
+
+        ind_rng[k] = indₛ:indₑ
     end
-    val /= length(CI)
+    CI = CartesianIndices(ind_rng.data)  # CartesianIndices{K}
 
-    return val
+    return mean(@view(vc.val[CI]))
 end
 
 end # module
