@@ -1,4 +1,5 @@
 using VoxelwiseConstantMapping
+using Statistics: mean
 using Test
 
 @testset "VoxelwiseConstantMapping" begin
