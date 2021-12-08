@@ -1,7 +1,7 @@
 name = "VoxelwiseConstantMapping"
 uuid = "30c4ba4d-5c6d-4df8-9a6f-7ded98721337"
 authors = ["Wonseok Shin <wsshin97@gmail.com>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 AbbreviatedTypes = "1766def0-c946-4dda-a59e-d0d07f8410f7"
